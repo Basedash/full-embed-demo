@@ -127,28 +127,19 @@ The generated JWT includes the following claims:
 }
 ```
 
-JWTs expire after 10 minutes (per ADR recommendation). Click "Refresh embed" to generate a new token.
+JWTs expire after 10 minutes. Click "Refresh embed" to generate a new token.
 
 ## Troubleshooting
 
-### "JWT authentication not configured for this organization"
-
-The organization doesn't have a `jwtSecret` set. This should be automatically configured during setup, but you can manually update it:
-
-```sql
-UPDATE "Organization"
-SET "jwtSecret" = 'your-secret-here'
-WHERE id = 'org_xxxxxxxxxxxx';
-```
-
 ### "Embedding is not enabled for this organization"
 
-Enable embedding for the organization:
+Enable embedding for the organization using the public API:
 
-```sql
-UPDATE "Organization"
-SET "fullEmbedEnabled" = true
-WHERE id = 'org_xxxxxxxxxxxx';
+```bash
+curl -X PATCH http://localhost:3000/api/public/organizations/org_xxxxxxxxxxxx \
+  -H "Authorization: Bearer bd_key_xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"fullEmbedEnabled": true}'
 ```
 
 ### "Invalid or expired JWT"
@@ -158,18 +149,20 @@ WHERE id = 'org_xxxxxxxxxxxx';
 
 ### "Request origin not allowed"
 
-If the organization has `embedAllowedOrigins` configured, add `http://localhost:3001`:
+If the organization has `embedAllowedOrigins` configured, add `http://localhost:3001` using the public API:
 
-```sql
-UPDATE "Organization"
-SET "embedAllowedOrigins" = ARRAY['http://localhost:3001']
-WHERE id = 'org_xxxxxxxxxxxx';
+```bash
+curl -X PATCH http://localhost:3000/api/public/organizations/org_xxxxxxxxxxxx \
+  -H "Authorization: Bearer bd_key_xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"embedAllowedOrigins": ["http://localhost:3001"]}'
 ```
 
 Or clear the allowed origins to allow any origin during testing:
 
-```sql
-UPDATE "Organization"
-SET "embedAllowedOrigins" = '{}'
-WHERE id = 'org_xxxxxxxxxxxx';
+```bash
+curl -X PATCH http://localhost:3000/api/public/organizations/org_xxxxxxxxxxxx \
+  -H "Authorization: Bearer bd_key_xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"embedAllowedOrigins": []}'
 ```
