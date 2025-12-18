@@ -4,8 +4,8 @@
 	"description": "Test harness for Basedash JWT-based embedding feature",
 	"type": "module",
 	"scripts": {
-		"dev": "bun run --port 3001 --hot src/index.ts",
-		"build": "bun build src/index.ts --outdir dist"
+		"dev": "bun run --port 3001 --hot api/index.ts",
+		"build": "bun build api/index.ts --outdir dist"
 	},
 	"dependencies": {
 		"hono": "^4.11.1",
