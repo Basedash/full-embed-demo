@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Basedash Embedding Test</title>
+	<style>
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family:
+				-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+				sans-serif;
+			background: #0f0f0f;
+			color: #e0e0e0;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.header {
+			background: #1a1a1a;
+			border-bottom: 1px solid #2a2a2a;
+			padding: 1rem 1.5rem;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+		}
+
+		.header h1 {
+			font-size: 1.125rem;
+			font-weight: 600;
+			color: #fff;
+		}
+
+		.controls {
+			display: flex;
+			gap: 0.75rem;
+			align-items: center;
+		}
+
+		button {
+			background: #2563eb;
+			color: white;
+			border: none;
+			padding: 0.5rem 1rem;
+			border-radius: 0.375rem;
+			font-size: 0.875rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: background 0.15s;
+		}
+
+		button:hover {
+			background: #1d4ed8;
+		}
+
+		button:disabled {
+			background: #374151;
+			cursor: not-allowed;
+		}
+
+		button.secondary {
+			background: #374151;
+		}
+
+		button.secondary:hover {
+			background: #4b5563;
+		}
+
+		.status {
+			font-size: 0.75rem;
+			padding: 0.25rem 0.75rem;
+			border-radius: 9999px;
+			background: #374151;
+		}
+
+		.status.loading {
+			background: #854d0e;
+			color: #fef08a;
+		}
+
+		.status.ready {
+			background: #14532d;
+			color: #86efac;
+		}
+
+		.status.error {
+			background: #7f1d1d;
+			color: #fca5a5;
+		}
+
+		.status.not-configured {
+			background: #78350f;
+			color: #fde68a;
+		}
+
+		.main {
+			flex: 1;
+			display: flex;
+			flex-direction: row;
+			padding: 1rem;
+			gap: 1rem;
+			min-height: 0;
+		}
+
+		.side-panel {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+			width: 360px;
+			flex-shrink: 0;
+			overflow-y: auto;
+		}
+
+		.panel {
+			background: #1a1a1a;
+			border: 1px solid #2a2a2a;
+			border-radius: 0.5rem;
+			padding: 1rem;
+		}
+
+		.panel summary {
+			cursor: pointer;
+			font-weight: 500;
+			color: #9ca3af;
+			font-size: 0.875rem;
+		}
+
+		.panel-content {
+			margin-top: 0.75rem;
+		}
+
+		.form-group {
+			margin-bottom: 0.75rem;
+		}
+
+		.form-group:last-child {
+			margin-bottom: 0;
+		}
+
+		.form-label {
+			display: block;
+			font-size: 0.75rem;
+			color: #9ca3af;
+			margin-bottom: 0.25rem;
+			font-weight: 500;
+		}
+
+		.form-input {
+			width: 100%;
+			background: #0a0a0a;
+			border: 1px solid #2a2a2a;
+			border-radius: 0.375rem;
+			padding: 0.5rem 0.75rem;
+			font-size: 0.8125rem;
+			color: #e0e0e0;
+			font-family: 'SF Mono', Monaco, Consolas, monospace;
+		}
+
+		.form-input:focus {
+			outline: none;
+			border-color: #2563eb;
+		}
+
+		.form-input::placeholder {
+			color: #4b5563;
+		}
+
+		textarea.form-input {
+			resize: vertical;
+			min-height: 60px;
+		}
+
+		.form-hint {
+			font-size: 0.6875rem;
+			color: #6b7280;
+			margin-top: 0.25rem;
+		}
+
+		.form-actions {
+			margin-top: 1rem;
+			display: flex;
+			gap: 0.5rem;
+		}
+
+		.form-actions button {
+			flex: 1;
+		}
+
+		.debug-row {
+			display: flex;
+			gap: 0.5rem;
+			margin-bottom: 0.5rem;
+			font-size: 0.8125rem;
+		}
+
+		.debug-label {
+			color: #6b7280;
+			min-width: 100px;
+		}
+
+		.debug-value {
+			color: #e0e0e0;
+			font-family: 'SF Mono', Monaco, Consolas, monospace;
+			word-break: break-all;
+		}
+
+		.jwt-display {
+			background: #0a0a0a;
+			border: 1px solid #2a2a2a;
+			border-radius: 0.375rem;
+			padding: 0.75rem;
+			font-family: 'SF Mono', Monaco, Consolas, monospace;
+			font-size: 0.75rem;
+			color: #9ca3af;
+			max-height: 100px;
+			overflow-y: auto;
+			word-break: break-all;
+			margin-top: 0.5rem;
+		}
+
+		.iframe-container {
+			flex: 1;
+			background: #1a1a1a;
+			border: 1px solid #2a2a2a;
+			border-radius: 0.5rem;
+			overflow: hidden;
+			min-width: 0;
+		}
+
+		iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
+
+		.placeholder {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: #6b7280;
+			flex-direction: column;
+			gap: 0.5rem;
+			padding: 2rem;
+			text-align: center;
+		}
+
+		.placeholder-icon {
+			font-size: 3rem;
+			opacity: 0.3;
+		}
+
+		.placeholder-text {
+			max-width: 280px;
+		}
+
+		.error-message {
+			background: #7f1d1d;
+			border: 1px solid #991b1b;
+			border-radius: 0.375rem;
+			padding: 0.75rem 1rem;
+			color: #fca5a5;
+			font-size: 0.875rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.success-message {
+			background: #14532d;
+			border: 1px solid #166534;
+			border-radius: 0.375rem;
+			padding: 0.75rem 1rem;
+			color: #86efac;
+			font-size: 0.875rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.divider {
+			border: none;
+			border-top: 1px solid #2a2a2a;
+			margin: 0.75rem 0;
+		}
+
+		.section-title {
+			font-size: 0.6875rem;
+			color: #6b7280;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-bottom: 0.5rem;
+		}
+
+		.icon-picker {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.icon-preview-container {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.icon-preview {
+			width: 48px;
+			height: 48px;
+			border-radius: 0.375rem;
+			background: #0a0a0a;
+			border: 1px solid #2a2a2a;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+			flex-shrink: 0;
+		}
+
+		.icon-preview img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		.icon-placeholder {
+			font-size: 1.25rem;
+			opacity: 0.5;
+		}
+
+		.icon-btn {
+			padding: 0.375rem 0.75rem;
+			font-size: 0.75rem;
+		}
+	</style>
+</head>
+
+<body>
+	<header class="header">
+		<h1>Basedash embedding test</h1>
+		<div class="controls">
+			<span id="status" class="status">Not configured</span>
+			<button id="refresh-btn" onclick="loadEmbed()" disabled>
+				Refresh embed
+			</button>
+			<button id="logout-btn" class="secondary" onclick="logoutEmbed()" disabled>
+				Logout
+			</button>
+		</div>
+	</header>
+
+	<main class="main">
+		<div class="side-panel">
+			<!-- Setup Panel -->
+			<details class="panel" id="setup-panel" open>
+				<summary>Setup</summary>
+				<div class="panel-content">
+					<div id="setup-error-container"></div>
+					<div id="setup-success-container"></div>
+
+					<div class="section-title">Authentication</div>
+
+					<div class="form-group">
+						<label class="form-label" for="api-key">API key</label>
+						<input type="text" id="api-key" class="form-input" placeholder="bd_key_..." />
+						<div class="form-hint">
+							Used to authenticate with the Basedash public API
+						</div>
+					</div>
+
+					<hr class="divider" />
+					<div class="section-title">Organization</div>
+
+					<div class="form-group">
+						<label class="form-label" for="org-name">Organization name</label>
+						<input type="text" id="org-name" class="form-input" placeholder="My Company" />
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="org-icon">Organization icon</label>
+						<div class="icon-picker">
+							<input type="file" id="org-icon" accept="image/jpeg,image/png" style="display: none" />
+							<div class="icon-preview-container">
+								<div class="icon-preview" id="icon-preview">
+									<span class="icon-placeholder">📷</span>
+								</div>
+								<button type="button" class="secondary icon-btn" onclick="document.getElementById('org-icon').click()">
+									Choose image
+								</button>
+								<button type="button" class="secondary icon-btn" id="clear-icon-btn" onclick="clearIconPreview()"
+									style="display: none">
+									Clear
+								</button>
+							</div>
+						</div>
+						<div class="form-hint">Optional. JPEG or PNG, max 2 MB</div>
+					</div>
+
+					<hr class="divider" />
+					<div class="section-title">Data source</div>
+
+					<div class="form-group">
+						<label class="form-label" for="data-source-uri">Connection URI</label>
+						<input type="text" id="data-source-uri" class="form-input"
+							placeholder="postgresql://user:pass@host:5432/db" />
+						<div class="form-hint">
+							Supports PostgreSQL, MySQL, ClickHouse, SQL Server
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="data-source-name">Display name</label>
+						<input type="text" id="data-source-name" class="form-input" placeholder="Production Database" />
+					</div>
+
+					<div class="form-actions">
+						<button id="setup-btn" onclick="runSetup()">
+							Create org and connect
+						</button>
+					</div>
+				</div>
+			</details>
+
+			<!-- Test Existing Org Panel -->
+			<details class="panel" id="existing-org-panel" open>
+				<summary>Test existing organization</summary>
+				<div class="panel-content">
+					<div id="existing-org-error-container"></div>
+					<div id="existing-org-success-container"></div>
+
+					<div class="form-group">
+						<label class="form-label" for="existing-org-id">Organization ID</label>
+						<input type="text" id="existing-org-id" class="form-input" placeholder="org_..." />
+						<div class="form-hint">
+							The ID of an existing organization to test
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="existing-jwt-secret">JWT secret</label>
+						<textarea id="existing-jwt-secret" class="form-input" rows="3"
+							placeholder="Enter the JWT secret for the organization"></textarea>
+						<div class="form-hint">
+							The embed JWT secret for the organization
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button id="load-existing-btn" onclick="loadExistingOrg()">
+							Load embed
+						</button>
+					</div>
+				</div>
+			</details>
+
+			<!-- Debug Panel -->
+			<details class="panel">
+				<summary>Debug information</summary>
+				<div class="panel-content">
+					<div id="error-container"></div>
+					<div class="debug-row">
+						<span class="debug-label">Basedash URL:</span>
+						<span class="debug-value" id="basedash-url">-</span>
+					</div>
+					<div class="debug-row">
+						<span class="debug-label">Organization:</span>
+						<span class="debug-value" id="org-id">-</span>
+					</div>
+					<div class="debug-row">
+						<span class="debug-label">User email:</span>
+						<span class="debug-value" id="user-email">-</span>
+					</div>
+					<div class="debug-row">
+						<span class="debug-label">JWT expires:</span>
+						<span class="debug-value" id="jwt-expires">-</span>
+					</div>
+					<div class="debug-row">
+						<span class="debug-label">JWT token:</span>
+					</div>
+					<div class="jwt-display" id="jwt-token">-</div>
+				</div>
+			</details>
+		</div>
+
+		<div class="iframe-container" id="iframe-container">
+			<div class="placeholder">
+				<div class="placeholder-icon">📊</div>
+				<div class="placeholder-text">
+					Fill out the setup form to create an organization and connect a data
+					source, then click "Refresh embed" to load Basedash
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		// =============================================================================
+		// LocalStorage Keys
+		// =============================================================================
+		const STORAGE_KEYS = {
+			apiKey: 'basedash-embed-api-key',
+			jwtSecret: 'basedash-embed-jwt-secret',
+			orgId: 'basedash-embed-org-id',
+		};
+
+		// =============================================================================
+		// DOM Elements
+		// =============================================================================
+		const statusEl = document.getElementById('status');
+		const refreshBtn = document.getElementById('refresh-btn');
+		const iframeContainer = document.getElementById('iframe-container');
+		const errorContainer = document.getElementById('error-container');
+		const setupErrorContainer = document.getElementById(
+			'setup-error-container',
+		);
+		const setupSuccessContainer = document.getElementById(
+			'setup-success-container',
+		);
+		const setupBtn = document.getElementById('setup-btn');
+
+		// Setup form inputs
+		const apiKeyInput = document.getElementById('api-key');
+		const orgNameInput = document.getElementById('org-name');
+		const orgIconInput = document.getElementById('org-icon');
+		const iconPreview = document.getElementById('icon-preview');
+		const clearIconBtn = document.getElementById('clear-icon-btn');
+		const dataSourceUriInput = document.getElementById('data-source-uri');
+		const dataSourceNameInput = document.getElementById('data-source-name');
+
+		// Icon preview handler
+		orgIconInput.addEventListener('change', function (e) {
+			const file = e.target.files[0];
+			if (file) {
+				// Validate file type
+				if (!['image/jpeg', 'image/png'].includes(file.type)) {
+					showError('Please select a JPEG or PNG image', setupErrorContainer);
+					orgIconInput.value = '';
+					return;
+				}
+				// Validate file size (2 MB)
+				if (file.size > 2 * 1024 * 1024) {
+					showError('Image must be smaller than 2 MB', setupErrorContainer);
+					orgIconInput.value = '';
+					return;
+				}
+				clearError(setupErrorContainer);
+
+				const reader = new FileReader();
+				reader.onload = function (e) {
+					iconPreview.innerHTML = `<img src="${e.target.result}" alt="Icon preview" />`;
+					clearIconBtn.style.display = 'inline-block';
+				};
+				reader.readAsDataURL(file);
+			}
+		});
+
+		function clearIconPreview() {
+			orgIconInput.value = '';
+			iconPreview.innerHTML = '<span class="icon-placeholder">📷</span>';
+			clearIconBtn.style.display = 'none';
+		}
+
+		// Existing org form inputs and containers
+		const existingOrgIdInput = document.getElementById('existing-org-id');
+		const existingJwtSecretInput = document.getElementById(
+			'existing-jwt-secret',
+		);
+		const existingOrgErrorContainer = document.getElementById(
+			'existing-org-error-container',
+		);
+		const existingOrgSuccessContainer = document.getElementById(
+			'existing-org-success-container',
+		);
+		const loadExistingBtn = document.getElementById('load-existing-btn');
+		const logoutBtn = document.getElementById('logout-btn');
+
+		// =============================================================================
+		// LocalStorage Helpers
+		// =============================================================================
+		function loadFromStorage() {
+			const apiKey = localStorage.getItem(STORAGE_KEYS.apiKey) || '';
+			const jwtSecret = localStorage.getItem(STORAGE_KEYS.jwtSecret) || '';
+			const orgId = localStorage.getItem(STORAGE_KEYS.orgId) || '';
+
+			apiKeyInput.value = apiKey;
+
+			// Also populate the existing org form
+			existingOrgIdInput.value = orgId;
+			existingJwtSecretInput.value = jwtSecret;
+
+			return { apiKey, jwtSecret, orgId };
+		}
+
+		function saveToStorage({ apiKey, jwtSecret, orgId }) {
+			if (apiKey !== undefined) {
+				localStorage.setItem(STORAGE_KEYS.apiKey, apiKey);
+			}
+			if (jwtSecret !== undefined) {
+				localStorage.setItem(STORAGE_KEYS.jwtSecret, jwtSecret);
+			}
+			if (orgId !== undefined) {
+				localStorage.setItem(STORAGE_KEYS.orgId, orgId);
+			}
+		}
+
+		// =============================================================================
+		// UI Helpers
+		// =============================================================================
+		function setStatus(text, className) {
+			statusEl.textContent = text;
+			statusEl.className = 'status ' + className;
+		}
+
+		function showError(message, container = errorContainer) {
+			container.innerHTML = `<div class="error-message">${message}</div>`;
+		}
+
+		function showSuccess(message, container = setupSuccessContainer) {
+			container.innerHTML = `<div class="success-message">${message}</div>`;
+		}
+
+		function clearError(container = errorContainer) {
+			container.innerHTML = '';
+		}
+
+		function clearAllMessages() {
+			clearError(errorContainer);
+			clearError(setupErrorContainer);
+			clearError(setupSuccessContainer);
+			clearError(existingOrgErrorContainer);
+			clearError(existingOrgSuccessContainer);
+		}
+
+		// =============================================================================
+		// Setup Flow
+		// =============================================================================
+		async function runSetup() {
+			clearAllMessages();
+			setupBtn.disabled = true;
+			setupBtn.textContent = 'Setting up...';
+
+			const apiKey = apiKeyInput.value.trim();
+			const orgName = orgNameInput.value.trim();
+			const dataSourceUri = dataSourceUriInput.value.trim();
+			const dataSourceName =
+				dataSourceNameInput.value.trim() || 'Connected Database';
+
+			// Validation
+			if (!apiKey) {
+				showError('API key is required', setupErrorContainer);
+				setupBtn.disabled = false;
+				setupBtn.textContent = 'Create org and connect';
+				return;
+			}
+
+			if (!orgName) {
+				showError('Organization name is required', setupErrorContainer);
+				setupBtn.disabled = false;
+				setupBtn.textContent = 'Create org and connect';
+				return;
+			}
+
+			if (!dataSourceUri) {
+				showError('Data source URI is required', setupErrorContainer);
+				setupBtn.disabled = false;
+				setupBtn.textContent = 'Create org and connect';
+				return;
+			}
+
+			try {
+				const response = await fetch('/api/setup', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						apiKey,
+						orgName,
+						dataSourceUri,
+						dataSourceName,
+					}),
+				});
+
+				const result = await response.json();
+
+				if (!response.ok) {
+					throw new Error(result.error || 'Setup failed');
+				}
+
+				// Save credentials to localStorage (jwtSecret is returned from API)
+				saveToStorage({
+					apiKey,
+					jwtSecret: result.jwtSecret,
+					orgId: result.orgId,
+				});
+
+				// Auto-populate the existing org form
+				existingOrgIdInput.value = result.orgId;
+				existingJwtSecretInput.value = result.jwtSecret;
+
+				// Update debug info
+				document.getElementById('org-id').textContent = result.orgId;
+
+				// Enable refresh button
+				refreshBtn.disabled = false;
+
+				// Upload icon if one was selected
+				const iconFile = orgIconInput.files[0];
+				let iconUploaded = false;
+				if (iconFile) {
+					setupBtn.textContent = 'Uploading icon...';
+					try {
+						const iconFormData = new FormData();
+						iconFormData.append('icon', iconFile);
+
+						const iconResponse = await fetch(`/api/upload-icon`, {
+							method: 'POST',
+							headers: {
+								'X-Api-Key': apiKey,
+								'X-Org-Id': result.orgId,
+							},
+							body: iconFormData,
+						});
+
+						if (!iconResponse.ok) {
+							const iconError = await iconResponse.json();
+							console.warn('Icon upload failed:', iconError);
+							// Don't fail the whole setup, just warn
+						} else {
+							iconUploaded = true;
+							clearIconPreview();
+						}
+					} catch (iconError) {
+						console.warn('Icon upload failed:', iconError);
+						// Don't fail the whole setup, just warn
+					}
+				}
+
+				const iconMessage = iconUploaded ? ' Icon uploaded.' : '';
+				showSuccess(
+					`Organization created! Data source "${result.dataSourceName}" connected.${iconMessage}`,
+					setupSuccessContainer,
+				);
+				setStatus('Configured', 'ready');
+
+				// Auto-load the embed
+				await loadEmbed();
+			} catch (error) {
+				console.error('Setup failed:', error);
+				showError(error.message, setupErrorContainer);
+			} finally {
+				setupBtn.disabled = false;
+				setupBtn.textContent = 'Create org and connect';
+			}
+		}
+
+		// =============================================================================
+		// Load Existing Org
+		// =============================================================================
+		async function loadExistingOrg() {
+			clearAllMessages();
+			loadExistingBtn.disabled = true;
+			loadExistingBtn.textContent = 'Loading...';
+
+			const orgId = existingOrgIdInput.value.trim();
+			const jwtSecret = existingJwtSecretInput.value.trim();
+
+			// Validation
+			if (!orgId) {
+				showError('Organization ID is required', existingOrgErrorContainer);
+				loadExistingBtn.disabled = false;
+				loadExistingBtn.textContent = 'Load embed';
+				return;
+			}
+
+			if (!jwtSecret) {
+				showError('JWT secret is required', existingOrgErrorContainer);
+				loadExistingBtn.disabled = false;
+				loadExistingBtn.textContent = 'Load embed';
+				return;
+			}
+
+			// Save to localStorage
+			saveToStorage({ orgId, jwtSecret });
+
+			// Enable refresh button
+			refreshBtn.disabled = false;
+
+			try {
+				await loadEmbed();
+				showSuccess('Embed loaded successfully', existingOrgSuccessContainer);
+			} catch (error) {
+				showError(error.message, existingOrgErrorContainer);
+			} finally {
+				loadExistingBtn.disabled = false;
+				loadExistingBtn.textContent = 'Load embed';
+			}
+		}
+
+		// =============================================================================
+		// Embed Loading
+		// =============================================================================
+		async function checkConfig() {
+			try {
+				const response = await fetch('/api/config');
+				const config = await response.json();
+
+				document.getElementById('basedash-url').textContent =
+					config.basedashUrl;
+
+				return config;
+			} catch (error) {
+				setStatus('Error', 'error');
+				showError('Failed to fetch configuration: ' + error.message);
+				return null;
+			}
+		}
+
+		async function loadEmbed() {
+			clearError();
+			setStatus('Loading...', 'loading');
+			refreshBtn.disabled = true;
+
+			const jwtSecret = localStorage.getItem(STORAGE_KEYS.jwtSecret);
+			const orgId = localStorage.getItem(STORAGE_KEYS.orgId);
+
+			if (!jwtSecret || !orgId) {
+				setStatus('Not configured', 'not-configured');
+				showError(
+					'Please complete one of the forms to configure the embed.',
+					existingOrgErrorContainer,
+				);
+				refreshBtn.disabled = false;
+				return;
+			}
+
+			try {
+				// Generate JWT with dynamic config
+				const response = await fetch('/api/generate-jwt', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ jwtSecret, orgId }),
+				});
+
+				const data = await response.json();
+
+				if (data.error) {
+					throw new Error(data.error);
+				}
+
+				// Update debug info
+				document.getElementById('org-id').textContent = orgId;
+				document.getElementById('user-email').textContent = data.user.email;
+				document.getElementById('jwt-expires').textContent = data.expiresIn;
+				document.getElementById('jwt-token').textContent = data.jwt;
+
+				// Create and load iframe
+				iframeContainer.innerHTML = `<iframe src="${data.ssoUrl}" height="100%" width="100%" title="Basedash Embed"></iframe>`;
+
+				setStatus('Ready', 'ready');
+
+				// Enable logout button
+				logoutBtn.disabled = false;
+			} catch (error) {
+				console.error('Failed to load embed:', error);
+				setStatus('Error', 'error');
+				showError('Failed to load embed: ' + error.message);
+			} finally {
+				refreshBtn.disabled = false;
+			}
+		}
+
+		// =============================================================================
+		// Logout
+		// =============================================================================
+		async function logoutEmbed() {
+			logoutBtn.disabled = true;
+			logoutBtn.textContent = 'Logging out...';
+
+			try {
+				// Get the Basedash URL from config
+				const configResponse = await fetch('/api/config');
+				const config = await configResponse.json();
+				const basedashUrl = config.basedashUrl;
+
+				// Create a hidden iframe to perform the logout
+				// This posts to the Basedash logout endpoint to clear the session cookie
+				const logoutFrame = document.createElement('iframe');
+				logoutFrame.style.display = 'none';
+				logoutFrame.name = 'logout-frame';
+				document.body.appendChild(logoutFrame);
+
+				// Create and submit a form to the logout endpoint
+				const form = document.createElement('form');
+				form.method = 'POST';
+				form.action = `${basedashUrl}/logout`;
+				form.target = 'logout-frame';
+				document.body.appendChild(form);
+				form.submit();
+
+				// Wait a moment for the logout to complete
+				await new Promise((resolve) => setTimeout(resolve, 500));
+
+				// Clean up
+				document.body.removeChild(form);
+				document.body.removeChild(logoutFrame);
+
+				// Reset the UI
+				iframeContainer.innerHTML = `
+					<div class="placeholder">
+						<div class="placeholder-icon">📊</div>
+						<div class="placeholder-text">
+							Logged out. Fill out a form to create or load an organization.
+						</div>
+					</div>
+				`;
+
+				// Reset form fields
+				existingOrgIdInput.value = '';
+				existingJwtSecretInput.value = '';
+
+				// Update debug info
+				document.getElementById('org-id').textContent = '-';
+				document.getElementById('user-email').textContent = '-';
+				document.getElementById('jwt-expires').textContent = '-';
+				document.getElementById('jwt-token').textContent = '-';
+
+				// Disable buttons
+				refreshBtn.disabled = true;
+				logoutBtn.disabled = true;
+
+				setStatus('Logged out', 'not-configured');
+				showSuccess(
+					'Successfully logged out of Basedash',
+					setupSuccessContainer,
+				);
+			} catch (error) {
+				console.error('Logout failed:', error);
+				showError('Logout failed: ' + error.message, setupErrorContainer);
+				logoutBtn.disabled = false;
+			} finally {
+				logoutBtn.textContent = 'Logout';
+			}
+		}
+
+		// =============================================================================
+		// Initialization
+		// =============================================================================
+		async function init() {
+			// Load saved values from localStorage
+			const { apiKey, jwtSecret, orgId } = loadFromStorage();
+
+			// Check server config
+			await checkConfig();
+
+			// If we have saved credentials, enable the refresh and logout buttons
+			if (jwtSecret && orgId) {
+				refreshBtn.disabled = false;
+				logoutBtn.disabled = false;
+				document.getElementById('org-id').textContent = orgId;
+				setStatus('Configured', 'ready');
+			}
+		}
+
+		init();
+	</script>
+</body>
+
+</html>

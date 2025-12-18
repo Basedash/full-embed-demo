@@ -1,15 +1,25 @@
 # Basedash embedding test
 
-A test harness for the Basedash JWT-based full-app embedding feature. This Bun app provides a setup form to create organizations and connect data sources via the public API, then generates JWT tokens and loads Basedash in an iframe to test the SSO authentication flow.
+A test harness for the Basedash JWT-based full-app embedding feature. Built with [Hono](https://hono.dev/) and [Bun](https://bun.sh/), deployable to [Vercel](https://vercel.com/).
+
+This app provides a setup form to create organizations and connect data sources via the public API, then generates JWT tokens and loads Basedash in an iframe to test the SSO authentication flow.
 
 ## Prerequisites
 
 Before running this test app, ensure:
 
-1. **Basedash is running locally** on `http://localhost:3000`
+1. **Basedash is accessible** (either locally at `http://localhost:3000` or production at `https://www.basedash.com`)
 2. **You have a valid API key** (generate one in Basedash settings)
 
-## Setup
+## Configuration
+
+The app uses environment variables for configuration:
+
+| Variable       | Description                            | Default                 |
+| -------------- | -------------------------------------- | ----------------------- |
+| `BASEDASH_URL` | The URL of the Basedash app to connect | `http://localhost:3000` |
+
+## Local development
 
 1. Install dependencies:
 
@@ -23,16 +33,55 @@ bun install
 bun run dev
 ```
 
-3. Open http://localhost:3001 in your browser
+3. Open http://localhost:3000 in your browser
 
-4. Fill out the setup form:
+To point to production Basedash instead of local:
+
+```bash
+BASEDASH_URL=https://www.basedash.com bun run dev
+```
+
+## Deployment to Vercel
+
+This app can be deployed to Vercel for testing against production Basedash.
+
+### Quick deploy
+
+```bash
+# Install dependencies (includes Vercel CLI)
+bun install
+
+# Deploy to Vercel (will prompt for project setup on first deploy)
+bun run deploy
+
+# Or deploy to production
+bun run deploy:prod
+```
+
+### Configure environment variables
+
+In your Vercel project settings, add:
+
+- `BASEDASH_URL` = `https://www.basedash.com` (or your Basedash instance URL)
+
+### Local Vercel development
+
+```bash
+bun run dev:vercel
+```
+
+This uses `vercel dev` to run locally with Vercel's runtime.
+
+## Usage
+
+1. Fill out the setup form:
    - **API key**: Your Basedash API key (starts with `bd_key_`)
    - **JWT secret**: A secret string for signing embed tokens (will be saved to the organization)
    - **Organization name**: Name for the new organization
    - **Connection URI**: Database connection string (e.g., `postgresql://user:pass@host:5432/db`)
    - **Display name**: Human-readable name for the data source
 
-5. Click "Create org and connect" to:
+2. Click "Create org and connect" to:
    - Create a new organization via the public API
    - Configure the JWT secret for embedding
    - Connect your data source
@@ -149,13 +198,20 @@ curl -X PATCH http://localhost:3000/api/public/organizations/org_xxxxxxxxxxxx \
 
 ### "Request origin not allowed"
 
-If the organization has `embedAllowedOrigins` configured, add `http://localhost:3001` using the public API:
+If the organization has `embedAllowedOrigins` configured, add your app's URL using the public API:
 
 ```bash
+# For local development
 curl -X PATCH http://localhost:3000/api/public/organizations/org_xxxxxxxxxxxx \
   -H "Authorization: Bearer bd_key_xxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"embedAllowedOrigins": ["http://localhost:3001"]}'
+
+# For Vercel deployment (replace with your actual Vercel URL)
+curl -X PATCH https://www.basedash.com/api/public/organizations/org_xxxxxxxxxxxx \
+  -H "Authorization: Bearer bd_key_xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"embedAllowedOrigins": ["https://your-app.vercel.app"]}'
 ```
 
 Or clear the allowed origins to allow any origin during testing:
