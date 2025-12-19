@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { serveStatic } from 'hono/bun';
 import { SignJWT } from 'jose';
 
 const app = new Hono();
@@ -483,8 +482,11 @@ app.post('/api/upload-icon', async (c) => {
 	}
 });
 
-// Serve static files from public directory
-app.use('/*', serveStatic({ root: './public' }));
+// Serve the test harness HTML at the root
+app.get('/', async (c) => {
+	const html = await Bun.file(new URL('./index.html', import.meta.url)).text();
+	return c.html(html);
+});
 
 // Export for Vercel
 export default app;

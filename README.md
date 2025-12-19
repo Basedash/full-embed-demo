@@ -43,34 +43,21 @@ BASEDASH_URL=https://www.basedash.com bun run dev
 
 ## Deployment to Vercel
 
-This app can be deployed to Vercel for testing against production Basedash.
+This app is deployed to Vercel automatically via GitHub integration. Pushing commits to the `main` branch triggers a production deployment.
 
-### Quick deploy
+### Environment variables
 
-```bash
-# Install dependencies (includes Vercel CLI)
-bun install
-
-# Deploy to Vercel (will prompt for project setup on first deploy)
-bun run deploy
-
-# Or deploy to production
-bun run deploy:prod
-```
-
-### Configure environment variables
-
-In your Vercel project settings, add:
+In your Vercel project settings, configure:
 
 - `BASEDASH_URL` = `https://www.basedash.com` (or your Basedash instance URL)
 
 ### Local Vercel development
 
 ```bash
-bun run dev:vercel
+bunx vc dev
 ```
 
-This uses `vercel dev` to run locally with Vercel's runtime.
+This runs locally with Vercel's runtime.
 
 ## Usage
 
