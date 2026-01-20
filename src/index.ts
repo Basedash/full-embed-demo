@@ -273,25 +273,27 @@ async function createDataSource(
 	dialect: DatabaseDialect,
 	credentials: ParsedCredentials,
 ): Promise<{ id: string; displayName: string }> {
-	const response = await fetch(`${BASEDASH_URL}/api/public/data-sources`, {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${apiKey}`,
-			'Content-Type': 'application/json',
+	const response = await fetch(
+		`${BASEDASH_URL}/api/public/organizations/${orgId}/data-sources`,
+		{
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${apiKey}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				type: 'direct',
+				displayName,
+				dialect,
+				host: credentials.host,
+				port: credentials.port,
+				databaseName: credentials.databaseName,
+				username: credentials.username,
+				password: credentials.password,
+				sslEnabled: credentials.sslEnabled,
+			}),
 		},
-		body: JSON.stringify({
-			type: 'direct',
-			organizationId: orgId,
-			displayName,
-			dialect,
-			host: credentials.host,
-			port: credentials.port,
-			databaseName: credentials.databaseName,
-			username: credentials.username,
-			password: credentials.password,
-			sslEnabled: credentials.sslEnabled,
-		}),
-	});
+	);
 
 	const responseData = (await response.json()) as
 		| CreateDataSourceResponse

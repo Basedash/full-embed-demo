@@ -449,6 +449,15 @@
 						</div>
 					</div>
 
+					<div class="form-group">
+						<label class="form-label" for="query-params">Query parameters</label>
+						<input type="text" id="query-params" class="form-input"
+							placeholder="?key1=value1&key2=value2" />
+						<div class="form-hint">
+							Optional URL parameters to append to the embed URL
+						</div>
+					</div>
+
 					<div class="form-actions">
 						<button id="load-existing-btn" onclick="loadExistingOrg()">
 							Load embed
@@ -505,6 +514,7 @@
 			apiKey: 'basedash-embed-api-key',
 			jwtSecret: 'basedash-embed-jwt-secret',
 			orgId: 'basedash-embed-org-id',
+			queryParams: 'basedash-embed-query-params',
 		};
 
 		// =============================================================================
@@ -564,6 +574,12 @@
 			clearIconBtn.style.display = 'none';
 		}
 
+		// Query params input - save to localStorage on change
+		const queryParamsInput = document.getElementById('query-params');
+		queryParamsInput.addEventListener('input', function (e) {
+			saveToStorage({ queryParams: e.target.value });
+		});
+
 		// Existing org form inputs and containers
 		const existingOrgIdInput = document.getElementById('existing-org-id');
 		const existingJwtSecretInput = document.getElementById(
@@ -585,17 +601,19 @@
 			const apiKey = localStorage.getItem(STORAGE_KEYS.apiKey) || '';
 			const jwtSecret = localStorage.getItem(STORAGE_KEYS.jwtSecret) || '';
 			const orgId = localStorage.getItem(STORAGE_KEYS.orgId) || '';
+			const queryParams = localStorage.getItem(STORAGE_KEYS.queryParams) || '';
 
 			apiKeyInput.value = apiKey;
 
 			// Also populate the existing org form
 			existingOrgIdInput.value = orgId;
 			existingJwtSecretInput.value = jwtSecret;
+			queryParamsInput.value = queryParams;
 
-			return { apiKey, jwtSecret, orgId };
+			return { apiKey, jwtSecret, orgId, queryParams };
 		}
 
-		function saveToStorage({ apiKey, jwtSecret, orgId }) {
+		function saveToStorage({ apiKey, jwtSecret, orgId, queryParams }) {
 			if (apiKey !== undefined) {
 				localStorage.setItem(STORAGE_KEYS.apiKey, apiKey);
 			}
@@ -604,6 +622,9 @@
 			}
 			if (orgId !== undefined) {
 				localStorage.setItem(STORAGE_KEYS.orgId, orgId);
+			}
+			if (queryParams !== undefined) {
+				localStorage.setItem(STORAGE_KEYS.queryParams, queryParams);
 			}
 		}
 
@@ -856,8 +877,17 @@
 				document.getElementById('jwt-expires').textContent = data.expiresIn;
 				document.getElementById('jwt-token').textContent = data.jwt;
 
+				// Build the iframe URL with optional query params
+				let iframeSrc = data.ssoUrl;
+				const queryParams = queryParamsInput.value.trim();
+				if (queryParams) {
+					// Handle if user included ? or not - ssoUrl already has ?jwt=..., so we use &
+					const paramsToAppend = queryParams.startsWith('?') ? queryParams.slice(1) : queryParams;
+					iframeSrc += '&' + paramsToAppend;
+				}
+
 				// Create and load iframe
-				iframeContainer.innerHTML = `<iframe src="${data.ssoUrl}" height="100%" width="100%" title="Basedash Embed"></iframe>`;
+				iframeContainer.innerHTML = `<iframe src="${iframeSrc}" height="100%" width="100%" title="Basedash Embed"></iframe>`;
 
 				setStatus('Ready', 'ready');
 
