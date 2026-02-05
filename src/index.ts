@@ -236,7 +236,7 @@ async function createOrganization(
 	apiKey: string,
 	orgName: string,
 ): Promise<{ id: string; slug: string; jwtSecret: string }> {
-	const response = await fetch(`${BASEDASH_URL}/api/public/organizations`, {
+	const response = await fetch(`${BASEDASH_URL}/api/public/organizations?include=jwtSecret`, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
